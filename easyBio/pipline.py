@@ -4,12 +4,8 @@ from pathlib import Path
 import re
 import subprocess
 import os
-from easyBio.tools.downloadTools import downLoadSRA, getbioproject
+from Utils.downloadUtils import downLoadSRA, getbioproject
 import argparse
-
-
-
-
 
 
 def splitSRA(dirs, kind, threads):
@@ -27,7 +23,8 @@ def splitSRA(dirs, kind, threads):
         output_files = list(outdir.glob(f"{sra_base}_*.fastq.gz"))
 
         if output_files:
-            print("\033[1;32mSkipping {} as output files already exist.\033[0m".format(sra_file))
+            print(
+                "\033[1;32mSkipping {} as output files already exist.\033[0m".format(sra_file))
             continue
 
         print("\033[1;33mProcessing {}...\033[0m".format(sra_file))
@@ -45,7 +42,7 @@ def splitSRA(dirs, kind, threads):
         print("\033[1;32mFinished processing {}\033[0m".format(sra_file))
 
     print("\033[1;32mAll files processed.\033[0m")
-    
+
 
 def rename_files(folder_path):
     # 创建一个空字典，用于存储SRR号及其出现的次数
@@ -60,8 +57,7 @@ def rename_files(folder_path):
             srr_counts[srr_id] = max(srr_counts.get(srr_id, 0), int(num))
 
     # 根据文件数重命名文件
-    
-    
+
     for file in os.listdir(folder_path):
         match = re.match(r'(SRR\d+)_(\d)', file)
         if match:
@@ -94,7 +90,7 @@ def cellrangerRun(db, fq_dir, matricespath, expectcellnum):
             # 如果以“SSR”开头，则删除这个子目录及其内容
             subdirectory_path = os.path.join(fq_dir, subdirectory)
             os.system(f"rm -rf {subdirectory_path}")
-    
+
     # time.sleep(10000)
 
     samples = set()
@@ -117,7 +113,6 @@ def cellrangerRun(db, fq_dir, matricespath, expectcellnum):
         subprocess.run(cmd, shell=True)
         mv_cmd = ["mv", f"{sample}", f"{matricespath}"]
         subprocess.run(mv_cmd, check=True)
-        
 
 
 if __name__ == "__main__":
@@ -146,7 +141,6 @@ if __name__ == "__main__":
     parser.add_argument("-ec", "--expectcellnum", type=int, default=3000,
                         help="Expected cell number for running cellranger (default: 3000)")
 
-
     args = parser.parse_args()
 
     # Extract values from parsed arguments
@@ -156,28 +150,11 @@ if __name__ == "__main__":
     kind = args.kind
     db_path = args.db_path
     expectcellnum = args.expectcellnum
-    
-    
-    # gsenumber = "GSE171539"
-    # dirs = "/home/data/user/lei/SRAData/GSE"
-    # threads = 50
-    # kind = "--split-files"
 
-    print("\033[1;32mGSE number:\033[0m \033[32m{}\033[0m".format(gsenumber))
-    print("\033[1;32mDirectory:\033[0m \033[32m{}\033[0m".format(dirs))
-    print("\033[1;32mThreads:\033[0m \033[32m{}\033[0m".format(threads))
-    
     rawdirs = f"{dirs}/{gsenumber}/raw"
-   
 
-    # 计算下载线程数量
-    max_download_thread = 50
-    download_thread = min(max_download_thread, math.ceil(threads / 2))
-
-    print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-    
     # 下载 SRA 数据
-    downLoadSRA(gsenumber, dirs, download_thread)
+    downLoadSRA(gsenumber, dirs, threads)
 
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
 

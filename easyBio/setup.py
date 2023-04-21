@@ -1,23 +1,40 @@
-from setuptools import setup, find_packages
+# -*- coding: utf-8 -*-
+from setupUtils import setup, find_packages
 
 VERSION = '0.1.0'
 
 setup(
     name='easyBio',  # package name
     version=VERSION,  # package version
-    author='Your Name',
-    author_email='your-email@example.com',
+    author='Lei Cui',
+    author_email='cuilei798@qq.com',
+    maintainer='Lei Cui',
+    maintainer_email='cuilei798@qq.com',
+    license='MIT License',
+    platforms=["linux"],
+    url='https://github.com/xleizi/easyBio_conda',
+
     description='The purpose of the creation of this package is to make bioinformatics analysis simpler.',
+    long_description=open('README.md').read(),
     packages=find_packages(),
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'downloadSRA=your_project.downloadSRA:main',
-            'splitSRA=your_project.splitSRA:main',
+            'downloadSRA=downloadSRA:main',
+            'splitSRA=splitSRA:main',
         ]
     },
     install_requires=[
         'biopython',
         # Add more dependencies here
     ],
+    package_data={
+        # 'easyBio': ['testdata/*']
+    },
+    classifiers=[
+        'Operating System :: OS Independent',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3'
+    ],
+    python_requires='>=3'
 )

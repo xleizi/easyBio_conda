@@ -4,8 +4,8 @@ import threadpool
 import math
 from time import time
 import urllib.parse
-from easyBio.tools.easyBioTool import getNowTime
 
+from Utils.toolsUtils import getNowTime
 
 
 class Download:
@@ -90,7 +90,8 @@ class Download:
 
         if (needDownSize == 0):  # 分块已下载
             # print(f"[{indexTip}][{start}-{end}]下载完成")
-            print("\033[1;32m[{}][{}-{}] Download completed\033[0m".format(indexTip, start, end))
+            print(
+                "\033[1;32m[{}][{}-{}] Download completed\033[0m".format(indexTip, start, end))
             return
         if (totalSize != needDownSize):  # 分块已存在,追加模式
             file = open(f"{self.dirs}/temp/{self.fileName}_{index}", mode="ba")
@@ -120,12 +121,14 @@ class Download:
                         if (divTime > self.limitTime):  # 超时,重新下载
                             reDownload = True
                             # print(f"[{divTime}ms][{indexTip}][{progress}%]超时，重新下载---{getNowTime()}")
-                            print("\033[1;31m[{}ms][{}][{}%] Timeout, downloading again---{}\033[0m".format(divTime, indexTip, progress, getNowTime()))
+                            print("\033[1;31m[{}ms][{}][{}%] Timeout, downloading again---{}\033[0m".format(
+                                divTime, indexTip, progress, getNowTime()))
                             file.close()
                             break
                         else:
                             startTime = int(time()*1000)
-                            print(f"[{divTime}ms][{indexTip}][{progress}%]downloading---{getNowTime()}")
+                            print(
+                                f"[{divTime}ms][{indexTip}][{progress}%]downloading---{getNowTime()}")
         if (reDownload):
             self.download(index, start, end)
         else:
@@ -170,16 +173,18 @@ class Download:
             if (os.path.isfile(partName)):
                 os.remove(partName)
                 print(f"删除[{partName}]成功---{getNowTime()}")
-            
+
     def start(self):
         totalSize = self.getTotalSize()  # 文件总大小
         if (not totalSize):
-            print("\033[1;31mFile does not support streaming download, program exited---{}\033[0m".format(getNowTime()))
+            print(
+                "\033[1;31mFile does not support streaming download, program exited---{}\033[0m".format(getNowTime()))
             return
         self.partNum = math.ceil((totalSize/self.perPartSize))  # 计算分块数量
         if (self.checkTask()):
             self.deleteParts()
-            print("\033[1;32m{} file downloaded, task exited---{}\033[0m".format(self.fileName, getNowTime()))
+            print(
+                "\033[1;32m{} file downloaded, task exited---{}\033[0m".format(self.fileName, getNowTime()))
             return
         pool = threadpool.ThreadPool(self.threadNum)  # 创建线程池
         partList = []  # 分块列表(包含序号和大小)
@@ -202,4 +207,5 @@ class Download:
             self.mergeParts()
             self.deleteParts()
         else:
-            print("\033[1;31mChunk download incomplete, please rerun the program---{}\033[0m".format(getNowTime()))
+            print(
+                "\033[1;31mChunk download incomplete, please rerun the program---{}\033[0m".format(getNowTime()))

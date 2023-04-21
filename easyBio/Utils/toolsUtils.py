@@ -1,4 +1,5 @@
 import datetime
+import multiprocessing
 import os
 
 
@@ -15,8 +16,8 @@ def del_files(dir_path):
             tf = os.path.join(dir_path, file_name)
             del_files(tf)
     print('del files ok')
-    
-    
+
+
 def getNowTime():
     curr_time = datetime.datetime.now()
     time_str = datetime.datetime.strftime(curr_time, '%Y-%m-%d %H:%M:%S')
@@ -28,3 +29,16 @@ def createDir(str):
         os.makedirs(str)
     except:
         pass
+
+
+def get_num_threads():
+    num_threads = multiprocessing.cpu_count()
+    if num_threads <= 16:
+        num_threads -= 2
+    elif num_threads < 64:
+        num_threads -= 4
+    elif num_threads < 128:
+        num_threads -= 8
+    else:
+        num_threads -= 10
+    return num_threads
