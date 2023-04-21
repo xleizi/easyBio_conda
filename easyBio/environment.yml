@@ -1,0 +1,15 @@
+name: your_project_name
+channels:
+  - defaults
+  - bioconda
+dependencies:
+  - python>=3
+  - requests
+  - threadpool
+  - math
+  - time
+  - urllib
+  - subprocess
+  - argparse
+  - pathlib
+  - re
