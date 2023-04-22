@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./easybio_conda/easyBio/Utils"
+    ],
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "editor.formatOnSave": false
+}

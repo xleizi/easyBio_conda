@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from setupUtils import setup, find_packages
+from setuptools import setup, find_packages
 
 VERSION = '0.1.0'
 
 setup(
-    name='easyBio',  # package name
+    name='easybio',  # package name
     version=VERSION,  # package version
     author='Lei Cui',
     author_email='cuilei798@qq.com',
@@ -20,21 +20,25 @@ setup(
     zip_safe=False,
     entry_points={
         'console_scripts': [
-            'downloadSRA=downloadSRA:main',
-            'splitSRA=splitSRA:main',
+            'easyBio=easyBio.easyBio:main',
+            'easydownloadSRA=easyBio.downloadSRA:main',
+            'easysplitSRA=easyBio.splitSRA:main',
         ]
     },
     install_requires=[
-        'biopython',
+        # 'biopython',
+        'threadpool',
+        'requests',
+        'argparse'
         # Add more dependencies here
     ],
     package_data={
-        # 'easyBio': ['testdata/*']
+        'Utils': ['Utils/*']
     },
     classifiers=[
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3'
     ],
-    python_requires='>=3'
+    python_requires='>=3',
 )

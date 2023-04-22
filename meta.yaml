@@ -1,40 +1,32 @@
-	package:
-	  name: easyBio
-	  version: 1.0.0
-	
-	source:
-	  path: /home/data/user/lei/python/easyBio_conda/easyBio/
-	 
-	build:
-	  number: 0
-	
-	requirements:
-	  build:
-	    - python >=3
-	    - setuptools
-	  run:
-	    - python >=3
-      - requests
-      - threadpool
-      - math
-      - time
-      - urllib
-      - subprocess
-      - argparse
-      - pathlib
-      - re
-	
-	test:
-		imports:
-			- easyBio
-			
-		commands:
-			- downLoadSRA -h
+package:
+  name: easybio
+  version: 0.1.0
 
-	about:
-	  home: https://github.com/xleizi/easyBio_conda
-	  license: MIT
-	  summary: dowload SRA data from GEO database
-    description: The purpose of the creation of this package is to make bioinformatics analysis simpler.,
-	  doc_url: https://github.com/xleizi/easyBio_conda/blob/main/README.md
-	  dev_url: https://github.com/xleizi/easyBio_conda
+source:
+  path: /home/data/user/lei/code/python/easyBio_conda/easybio_conda
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - python =3.10
+    - setuptools
+  run:
+    - python >=3
+    - numpy >=1.20
+
+test:
+  imports:
+    - easyBio
+
+  commands:
+    - easyBio
+
+about:
+  home: https://github.com/xleizi/easyBio_conda
+  license: MIT
+  summary: dowload SRA data from GEO database
+  description: The purpose of the creation of this package is to make bioinformatics analysis simpler.
+  doc_url: https://github.com/xleizi/easyBio_conda/blob/main/README.md
+  dev_url: https://github.com/xleizi/easyBio_conda

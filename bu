@@ -1,0 +1,5 @@
+    - cutadapt
+    - fastqc
+    - trim-galore
+    - parallel-fastq-dump
+    - multiqc

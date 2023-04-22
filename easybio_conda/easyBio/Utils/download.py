@@ -5,7 +5,7 @@ import math
 from time import time
 import urllib.parse
 
-from Utils.toolsUtils import getNowTime
+from .toolsUtils import getNowTime
 
 
 class Download:

@@ -1,6 +1,6 @@
 import sys
 
-from easyBio.Utils.easyBioUtils import cellrangerRun
+from .Utils.easyBioUtils import cellrangerRun
 
 
 if __name__ == "__main__":

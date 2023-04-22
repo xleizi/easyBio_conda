@@ -1,7 +1,8 @@
 import math
-from Utils.netUtils import requestGet
-from Utils.download import Download
-from Utils.toolsUtils import createDir
+import os
+from .netUtils import requestGet
+from .download import Download
+from .toolsUtils import createDir
 
 
 def getbioproject(gsenumber):
@@ -31,7 +32,13 @@ def getbioproject(gsenumber):
     return bioproject
 
 
-def downLoadSRA(gsenumber, dirs, threads):
+def idDownloadAll(results, dirs):
+    exitCount = sum(1 for study in results if os.path.exists(
+        f"{dirs}/{study['run_accession']}.sra"))
+    return exitCount == len(results)
+
+
+def downLoadSRA(gsenumber, dirs, threads) -> bool:
     """
     This function downloads SRA files for a given GSE number using the EBI REST API.
     The SRA files are downloaded to the specified directory.
@@ -44,22 +51,30 @@ def downLoadSRA(gsenumber, dirs, threads):
     Returns:
     None
     """
-    threads = min(50, math.ceil(threads / 2))
-
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-
+    threads = min(50, math.ceil(threads / 2))
     bioproject = getbioproject(gsenumber)
-
     pjurl = f"https://www.ebi.ac.uk/ena/portal/api/filereport?result=read_run&accession={bioproject}&offset=0&limit=1000&format=json&fields=study_accession,secondary_study_accession,sample_accession,secondary_sample_accession,experiment_accession,run_accession,submission_accession,tax_id,scientific_name,instrument_platform,instrument_model,library_name,nominal_length,library_layout,library_strategy,library_source,library_selection,read_count,base_count,center_name,first_public,last_updated,experiment_title,study_title,study_alias,experiment_alias,run_alias,fastq_bytes,fastq_md5,fastq_ftp,fastq_aspera,fastq_galaxy,submitted_bytes,submitted_md5,submitted_ftp,submitted_aspera,submitted_galaxy,submitted_format,sra_bytes,sra_md5,sra_ftp,sra_aspera,sra_galaxy,cram_index_ftp,cram_index_aspera,cram_index_galaxy,sample_alias,broker_name,sample_title,nominal_sdev,first_created"
     pjre = requestGet(pjurl)
     results = pjre.json()
+    filedirs = f"{dirs}/{gsenumber}/raw/sra"
+    createDir(filedirs)
+    
+    if idDownloadAll(results, filedirs):
+        print("\033[32mAll files have been successfully downloaded. Exiting or entering the fastq-dump program...\033[0m")
+        return True
+    
     for study in results:
         run_accession = study["run_accession"]
         print("\033[33mrun_accession: {}\033[0m".format(run_accession))
-        filedirs = f"{dirs}/{gsenumber}/raw/sra"
-        createDir(filedirs)
         # sra_md5 = study["sra_md5"]
         sra_ftp = f"https://sra-pub-run-odp.s3.amazonaws.com/sra/{run_accession}/{run_accession}"
         download = Download(sra_ftp, dirs=filedirs, fileName=f"{run_accession}.sra",
                             threadNum=threads, limitTime=60000)
         download.start()
+    
+    return False
+
+
+
+
