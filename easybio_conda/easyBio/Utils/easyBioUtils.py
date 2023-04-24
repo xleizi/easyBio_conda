@@ -1,10 +1,6 @@
 import os
 import subprocess
 
-
-import os
-import subprocess
-
 def splitSRAfun(folder, outdir, threads, kind):
     # Get a list of .sra files in the folder
     sra_files = [f for f in os.listdir(folder) if f.endswith('.sra')]
@@ -35,47 +31,22 @@ def splitSRAfun(folder, outdir, threads, kind):
     print("\033[1;32m All files processed.\033[0m")
 
 
-
-def splitSRAfun2(folder, outdir, threads, kind):
-    # Iterate over .sra files in the folder and run the provided command
-    for sra_file in folder.glob("*.sra"):
-        sra_base = sra_file.stem
-
-        output_files = list(outdir.glob(f"{sra_base}_*.fastq.gz"))
-
-        if output_files:
-            print(f"Skipping {sra_file} as output files already exist.")
-            continue
-
-        print(f"Processing {sra_file}...")
-
-        cmd = [
-            "parallel-fastq-dump",
-            "--sra-id", str(sra_file),
-            "--threads", str(threads),
-            "--outdir", str(outdir),
-            kind,
-            "--gzip"
-        ]
-
-        subprocess.run(cmd, check=True)
-        print("\033[1;32m Finished processing", sra_file, "\033[0m")
-    print("\033[1;32m All files processed.\033[0m")
-
 def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
     # 获取文件夹中的所有文件名
     filenames = os.listdir(fq_dir)
 
+    current_dir = os.getcwd()
     # 获取目录中所有的子目录
     subdirectories = [d for d in os.listdir(
-        fq_dir) if os.path.isdir(os.path.join(fq_dir, d))]
+        current_dir) if os.path.isdir(os.path.join(current_dir, d))]
 
     # 遍历子目录，检查是否以“SRR”开头
     for subdirectory in subdirectories:
         if subdirectory.startswith("SRR"):
             print("\033[1;31m Found residual folder, removing it...\033[0m")
             # 如果以“SSR”开头，则删除这个子目录及其内容
-            subdirectory_path = os.path.join(fq_dir, subdirectory)
+            subdirectory_path = os.path.join(current_dir, subdirectory)
+            # rm -rf删的更快(*^▽^*)
             os.system(f"rm -rf {subdirectory_path}")
 
     # time.sleep(10000)

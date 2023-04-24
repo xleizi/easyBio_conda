@@ -1,42 +1,14 @@
 import multiprocessing
-from pathlib import Path
-import re
 import os
-from .Utils.downloadUtils import downLoadSRA
+
+from changeSRAName import renames1
+from changeSRAName import renames2
+from .Utils import downLoadSRA
 import argparse
 
 from .Utils import cellrangerRun, splitSRAfun
 from .Utils import createDir
 
-
-def rename_files(folder_path):
-    # 创建一个空字典，用于存储SRR号及其出现的次数
-    srr_counts = {}
-
-    # 遍历文件夹中的所有文件
-    for file in os.listdir(folder_path):
-        # 使用正则表达式匹配文件名
-        match = re.match(r'(SRR\d+)_(\d)', file)
-        if match:
-            srr_id, num = match.groups()
-            srr_counts[srr_id] = max(srr_counts.get(srr_id, 0), int(num))
-
-    # 根据文件数重命名文件
-
-    for file in os.listdir(folder_path):
-        match = re.match(r'(SRR\d+)_(\d)', file)
-        if match:
-            srr_id, num = match.groups()
-            if srr_counts[srr_id] == 2:
-                new_name = f'{srr_id}_S1_L001_R{num}_001.fastq.gz'
-            elif srr_counts[srr_id] == 3:
-                if num == "1":
-                    new_name = f'{srr_id}_S1_L001_I1_001.fastq.gz'
-                else:
-                    new_name = f'{srr_id}_S1_L001_R{int(num)-1}_001.fastq.gz'
-            os.rename(os.path.join(folder_path, file),
-                      os.path.join(folder_path, new_name))
-    print("\033[1;32mAll files are already in Cell Ranger format.\033[0m")
 
 
 if __name__ == "__main__":
@@ -60,12 +32,11 @@ if __name__ == "__main__":
                         help="Number of threads (default: your cpucounts)")
     parser.add_argument("-k", "--kind", default="--split-files",
                         help="Zhe kind of split")
+    parser.add_argument("-l", "--list_file", help="matching list")
     parser.add_argument("-db", "--db_path", required=True,
                         help="Path to the gene reference file (required)")
     parser.add_argument("-ec", "--expectcellnum", type=int, default=3000,
                         help="Expected cell number for running cellranger (default: 3000)")
-    
-    
 
     args = parser.parse_args()
 
@@ -76,6 +47,7 @@ if __name__ == "__main__":
     kind = args.kind
     db_path = args.db_path
     expectcellnum = args.expectcellnum
+    list_file = args.list_file
 
     rawdirs = f"{dirs}/{gsenumber}/raw"
 
@@ -92,8 +64,16 @@ if __name__ == "__main__":
 
     # splitSRA(rawdirs, kind, threads)
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-    rename_files(f"{rawdirs}/fq")
+    
+    # rename_files(f"{rawdirs}/fq")
+    fqfiles = f"{rawdirs}/fq"
+    if list_file:
+        renames2(list_file, fqfiles)
+    else:
+        renames1(fqfiles)
+    print("\033[1;32m Rename completed\033[0m")
+    
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
     matricespath = f"{rawdirs}/matrices"
     createDir(matricespath)
-    cellrangerRun(db_path, f"{rawdirs}/fq", expectcellnum, matricespath)
+    cellrangerRun(db_path, fqfiles, expectcellnum, matricespath)

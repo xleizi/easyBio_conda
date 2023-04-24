@@ -24,6 +24,7 @@ setup(
             'easydownloadSRA=easyBio.downloadSRA:main',
             'easysplitSRA=easyBio.splitSRA:main',
             'easychangeSRAName=easyBio.changeSRAName:main',
+            'easycellranger=easyBio.run_cellranger:main',
         ]
     },
     install_requires=[
