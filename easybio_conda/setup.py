@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 
 setup(
     name='easybio',  # package name
@@ -23,6 +23,7 @@ setup(
             'easyBio=easyBio.easyBio:main',
             'easydownloadSRA=easyBio.downloadSRA:main',
             'easysplitSRA=easyBio.splitSRA:main',
+            'easychangeSRAName=easyBio.changeSRAName:main',
         ]
     },
     install_requires=[

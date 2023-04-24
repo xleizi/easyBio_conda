@@ -1,6 +1,6 @@
 package:
   name: easybio
-  version: 0.1.0
+  version: 0.2.0
 
 source:
   path: /home/data/user/lei/code/python/easyBio_conda/easybio_conda
