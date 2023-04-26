@@ -25,7 +25,8 @@ setup(
             'easysplitSRA=easyBio.splitSRA:main',
             'easychangeSRAName=easyBio.changeSRAName:main',
             'easycellranger=easyBio.run_cellranger:main',
-            'easyscGEOpipline=easyBio.pipline:main',
+            'easyscGEOpipline=easyBio.pipline:main', 
+            'easyVelocyto=easyBio.runvelocyto:main',
         ]
     },
     install_requires=[

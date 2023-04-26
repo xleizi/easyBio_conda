@@ -26,7 +26,7 @@ def parse_args():
 # Function to run velocyto command for a given directory
 
 
-def run_velocyto(directory, rmsk_file, gtf_file, num_threads):
+def run_velocyto(directory, rmsk_file, gtf_file, matrices_file, num_threads):
     cmd = f'velocyto run10x -m {rmsk_file} {matrices_file}/{directory} {gtf_file} -@ {num_threads}'
     subprocess.run(cmd, shell=True)
 
@@ -56,9 +56,7 @@ def compute_max_workers(matrices_file):
     return max_workers
 
 
-# Main script execution
-if __name__ == "__main__":
-
+def main():
     # Parse command line arguments
     args = parse_args()
     rmsk_file = args.rmsk_file
@@ -73,12 +71,15 @@ if __name__ == "__main__":
     # Get the list of folders to process, excluding those with existing loom files
     folders = [f for f in os.listdir(matrices_file) if os.path.isdir(
         os.path.join(matrices_file, f)) and not check_existing_loom(os.path.join(matrices_file, f))]
-
+    print(folders)
     # Run velocyto in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(
-            run_velocyto, folder, rmsk_file, gtf_file, num_threads): folder for folder in folders}
-
+            run_velocyto, folder, rmsk_file, gtf_file, matrices_file, num_threads): folder for folder in folders}
         # Process the results and print the status for each folder
         for future in as_completed(futures):
             folder = futures[future]
+# Main script execution
+if __name__ == "__main__":
+    main()
+

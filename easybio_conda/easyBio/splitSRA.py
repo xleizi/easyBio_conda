@@ -4,10 +4,9 @@
 # Description:
 import argparse
 import os
-from pathlib import Path
 
 from .Utils import splitSRAfun
-from .Utils import createDir, get_num_threads
+from .Utils import get_num_threads
 
 def main():
     num_threads = get_num_threads()
