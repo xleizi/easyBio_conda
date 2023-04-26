@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# Author: Lei
+# Date: 2023-04-20
+# Description:
 from concurrent.futures import ThreadPoolExecutor
 import os
 import shutil
@@ -89,11 +93,11 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
 
 # 多线程跑cellranger使用，目前看效果不大（比单线程快不了太多）
 def run_cellranger(sample, db, fq_dir, expectcellnum, matricespath):
+    ## --localmem = 128 \
     cmd = f"""cellranger count --id={sample} \
 --transcriptome={db} \
 --fastqs={fq_dir} \
 --sample={sample} \
---localmem=128 \
 --expect-cells={expectcellnum} \
 --nosecondary"""
     print("\033[1;33m Running command for sample {}:\033[0m".format(sample))
@@ -160,10 +164,12 @@ def check_file_exists(folder_path, target_suffix):
 def tidySummary(matrices_base, output_base):
     summary_base = os.path.join(output_base, "summary")
     matrix_base = os.path.join(output_base, "matrix")
+    matrixh5_base = os.path.join(output_base, "matrixh5")
 
     # 如果目标文件夹不存在，创建它
     os.makedirs(summary_base, exist_ok=True)
     os.makedirs(matrix_base, exist_ok=True)
+    os.makedirs(matrixh5_base, exist_ok=True)
 
     for folder in os.listdir(matrices_base):
         src_folder = os.path.join(matrices_base, folder)
@@ -172,12 +178,22 @@ def tidySummary(matrices_base, output_base):
             src_file = os.path.join(src_folder, 'outs', 'web_summary.html')
             src_matrix_folder = os.path.join(
                 src_folder, 'outs', 'raw_feature_bc_matrix')
+            matrixh5flie = os.path.join(
+                src_folder, 'outs', 'filtered_feature_bc_matrix.h5')
 
             if os.path.exists(src_file):
                 dst_file = os.path.join(summary_base, folder + '.html')
-                shutil.copy2(src_file, dst_file)
+                if not os.path.exists(dst_file):
+                    shutil.copy2(src_file, dst_file)
                 
             if os.path.exists(src_matrix_folder):
                 dst_matrix_folder = os.path.join(matrix_base, folder)
-                shutil.copytree(src_matrix_folder, dst_matrix_folder)
+                if not os.path.exists(dst_matrix_folder):
+                    shutil.copytree(src_matrix_folder, dst_matrix_folder)
+            
+            if os.path.exists(matrixh5flie):
+                dst_matrixh5_folder = os.path.join(matrixh5_base, folder)
+                if not os.path.exists(dst_matrixh5_folder):
+                    shutil.copy2(matrixh5flie, dst_matrixh5_folder)
+    
     print("\033[1;32m All output results have been organized.\033[0m")
