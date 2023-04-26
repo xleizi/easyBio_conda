@@ -1,26 +1,14 @@
-import multiprocessing
 import os
 
-from changeSRAName import renames1
-from changeSRAName import renames2
-from .Utils import downLoadSRA
+from .Utils import tidySummary
+from .Utils import get_num_threads
+
+from .changeSRAName import renames1, renames2
+from .Utils import check_file_exists, cellrangerRun, splitSRAfun, downLoadSRA
 import argparse
 
-from .Utils import cellrangerRun, splitSRAfun
-from .Utils import createDir
-
-
-
-if __name__ == "__main__":
-    num_threads = multiprocessing.cpu_count()
-    if num_threads <= 16:
-        num_threads -= 2
-    elif num_threads < 64:
-        num_threads -= 4
-    elif num_threads < 128:
-        num_threads -= 8
-    else:
-        num_threads -= 10
+def main():
+    num_threads = get_num_threads()
 
     # Set up argument parser
     parser = argparse.ArgumentParser(
@@ -56,24 +44,43 @@ if __name__ == "__main__":
 
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
 
-    folder = f"{dirs}/sra"
-    outdir = f"{dirs}/fq"
-
-    createDir(outdir)
-    splitSRAfun(folder, outdir, threads, kind)
 
     # splitSRA(rawdirs, kind, threads)
-    print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-    
-    # rename_files(f"{rawdirs}/fq")
+    folder = f"{rawdirs}/sra"
     fqfiles = f"{rawdirs}/fq"
-    if list_file:
-        renames2(list_file, fqfiles)
+    os.makedirs(folder, exist_ok=True)
+    os.makedirs(fqfiles, exist_ok=True)
+
+    print("\033[1;33m{}\033[0m".format(folder))   # 黄
+    print("\033[1;33m{}\033[0m".format(fqfiles))   # 黄
+
+    target_suffix = 'S1_L001_R1_001.fastq.gz'
+    file_exists = check_file_exists(fqfiles, target_suffix)
+
+    if file_exists:
+        print(f"fastq文件已进行改名")
     else:
-        renames1(fqfiles)
-    print("\033[1;32m Rename completed\033[0m")
-    
+        splitSRAfun(folder, fqfiles, threads, kind)
+        
+        print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
+        if list_file:
+            renames2(list_file, fqfiles)
+        else:
+            renames1(fqfiles)
+        print("\033[1;32m Rename completed\033[0m")
+
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
     matricespath = f"{rawdirs}/matrices"
-    createDir(matricespath)
+    os.makedirs(matricespath, exist_ok=True)
     cellrangerRun(db_path, fqfiles, expectcellnum, matricespath)
+    
+    outputpath = f"{rawdirs}/output"
+    os.makedirs(outputpath, exist_ok=True)
+
+    print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
+    # 设置源文件夹和目标文件夹的路径
+    tidySummary(matricespath, outputpath)
+
+
+if __name__ == "__main__":
+    main()

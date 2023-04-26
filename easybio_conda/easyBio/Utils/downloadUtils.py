@@ -2,7 +2,6 @@ import math
 import os
 from .netUtils import requestGet
 from .download import Download
-from .toolsUtils import createDir
 
 
 def getbioproject(gsenumber):
@@ -58,8 +57,8 @@ def downLoadSRA(gsenumber, dirs, threads) -> bool:
     pjre = requestGet(pjurl)
     results = pjre.json()
     filedirs = f"{dirs}/{gsenumber}/raw/sra"
-    createDir(filedirs)
-    
+    os.makedirs(filedirs, exist_ok=True)
+
     if idDownloadAll(results, filedirs):
         print("\033[32mAll files have been successfully downloaded. Exiting or entering the fastq-dump program...\033[0m")
         return True

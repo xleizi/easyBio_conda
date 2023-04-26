@@ -1,5 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor
 import os
+import shutil
 import subprocess
+import concurrent
+
+from .toolsUtils import get_num_threads
 
 def splitSRAfun(folder, outdir, threads, kind):
     # Get a list of .sra files in the folder
@@ -50,14 +55,23 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
             os.system(f"rm -rf {subdirectory_path}")
 
     # time.sleep(10000)
-
+                
     samples = set()
     for filename in filenames:
         if filename.startswith("SRR"):
             sample_id = filename.split("_")[0]
-            samples.add(sample_id)
-
-    # 遍历样本并运行cellranger count命令
+            ## 剔除掉已存在的处理好的文件夹
+            if matricespath != "":
+                sample_dir = os.path.join(matricespath, sample_id)
+                if not os.path.isdir(sample_dir):
+                    samples.add(sample_id)
+                    
+    if samples == set():
+        print("\033[1;32m All samples have been processed with Cell Ranger\033[0m")
+    else:
+        print(samples)
+         
+    
     for sample in samples:
         cmd = f"""cellranger count --id={sample} \
 --transcriptome={db} \
@@ -71,3 +85,99 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
         if matricespath != "":
             mv_cmd = ["mv", f"{sample}", f"{matricespath}"]
             subprocess.run(mv_cmd, check=True)
+
+
+# 多线程跑cellranger使用，目前看效果不大（比单线程快不了太多）
+def run_cellranger(sample, db, fq_dir, expectcellnum, matricespath):
+    cmd = f"""cellranger count --id={sample} \
+--transcriptome={db} \
+--fastqs={fq_dir} \
+--sample={sample} \
+--localmem=128 \
+--expect-cells={expectcellnum} \
+--nosecondary"""
+    print("\033[1;33m Running command for sample {}:\033[0m".format(sample))
+    print("\033[1;31m{}\033[0m".format(cmd))
+    subprocess.run(cmd, shell=True)
+    if matricespath != "":
+        mv_cmd = ["mv", f"{sample}", f"{matricespath}"]
+        subprocess.run(mv_cmd, check=True)
+        
+        
+def cellrangerRun2(db, fq_dir, expectcellnum, matricespath=""):
+    # 获取文件夹中的所有文件名
+    filenames = os.listdir(fq_dir)
+
+    current_dir = os.getcwd()
+    # 获取目录中所有的子目录
+    subdirectories = [d for d in os.listdir(
+        current_dir) if os.path.isdir(os.path.join(current_dir, d))]
+
+    # 遍历子目录，检查是否以“SRR”开头
+    for subdirectory in subdirectories:
+        if subdirectory.startswith("SRR"):
+            print("\033[1;31m Found residual folder, removing it...\033[0m")
+            # 如果以“SSR”开头，则删除这个子目录及其内容
+            subdirectory_path = os.path.join(current_dir, subdirectory)
+            # rm -rf删的更快(*^▽^*)
+            os.system(f"rm -rf {subdirectory_path}")
+
+    # time.sleep(10000)
+
+    samples = set()
+    for filename in filenames:
+        if filename.startswith("SRR"):
+            sample_id = filename.split("_")[0]
+            # 剔除掉已存在的处理好的文件夹
+            if matricespath != "":
+                sample_dir = os.path.join(matricespath, sample_id)
+                if not os.path.isdir(sample_dir):
+                    samples.add(sample_id)
+    print(samples)
+
+    num_threads = int(get_num_threads() / 10)
+
+    # 调用函数
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = {executor.submit(run_cellranger, sample, db, fq_dir,
+                                expectcellnum, matricespath): sample for sample in samples}
+        for future in concurrent.futures.as_completed(futures):
+            sample = futures[future]
+            try:
+                future.result()
+                print(f"Sample {sample} completed successfully.")
+            except Exception as e:
+                print(f"Sample {sample} encountered an error: {e}")
+
+
+def check_file_exists(folder_path, target_suffix):
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith(target_suffix):
+            return True
+    return False
+
+
+def tidySummary(matrices_base, output_base):
+    summary_base = os.path.join(output_base, "summary")
+    matrix_base = os.path.join(output_base, "matrix")
+
+    # 如果目标文件夹不存在，创建它
+    os.makedirs(summary_base, exist_ok=True)
+    os.makedirs(matrix_base, exist_ok=True)
+
+    for folder in os.listdir(matrices_base):
+        src_folder = os.path.join(matrices_base, folder)
+
+        if os.path.isdir(src_folder):
+            src_file = os.path.join(src_folder, 'outs', 'web_summary.html')
+            src_matrix_folder = os.path.join(
+                src_folder, 'outs', 'raw_feature_bc_matrix')
+
+            if os.path.exists(src_file):
+                dst_file = os.path.join(summary_base, folder + '.html')
+                shutil.copy2(src_file, dst_file)
+                
+            if os.path.exists(src_matrix_folder):
+                dst_matrix_folder = os.path.join(matrix_base, folder)
+                shutil.copytree(src_matrix_folder, dst_matrix_folder)
+    print("\033[1;32m All output results have been organized.\033[0m")

@@ -34,7 +34,7 @@ def main():
     print("\033[1;32m kind:\033[0m \033[32m{}\033[0m".format(kind))
 
     # Create output directory if it doesn't exist
-    createDir(outdir)
+    os.makedirs(outdir, exist_ok=True)
     splitSRAfun(folder, outdir, threads, kind)
 
 
