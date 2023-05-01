@@ -3,14 +3,12 @@
 # Date: 2023-04-26
 # Description:
 import os
-import sys
 import argparse
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+
 # Function to parse command line arguments
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Run velocyto in parallel")
     parser.add_argument("-rmf", "--rmsk_file", type=str, required=True,
@@ -23,16 +21,14 @@ def parse_args():
                         help="Maximum memory in GB (default: 200)")
     return parser.parse_args()
 
+
 # Function to run velocyto command for a given directory
-
-
 def run_velocyto(directory, rmsk_file, gtf_file, matrices_file, num_threads):
     cmd = f'velocyto run10x -m {rmsk_file} {matrices_file}/{directory} {gtf_file} -@ {num_threads}'
     subprocess.run(cmd, shell=True)
 
+
 # Function to check if a directory contains any loom files
-
-
 def check_existing_loom(directory):
     velocyto_dir = os.path.join(directory, 'velocyto')
     if os.path.exists(velocyto_dir) and os.path.isdir(velocyto_dir):
@@ -42,9 +38,8 @@ def check_existing_loom(directory):
             return True
     return False
 
+
 # Function to compute the maximum number of workers for ThreadPoolExecutor
-
-
 def compute_max_workers(matrices_file):
     folders = [f for f in os.listdir(matrices_file) if os.path.isdir(
         os.path.join(matrices_file, f)) and not check_existing_loom(os.path.join(matrices_file, f))]
@@ -79,6 +74,8 @@ def main():
         # Process the results and print the status for each folder
         for future in as_completed(futures):
             folder = futures[future]
+
+
 # Main script execution
 if __name__ == "__main__":
     main()
