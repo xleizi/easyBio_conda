@@ -5,8 +5,35 @@
 import datetime
 import multiprocessing
 import os
+import hashlib
+
+def calMd5(filename):
+    with open(filename,"rb") as f:
+        bytes = f.read() # read file as bytes
+        readable_hash = hashlib.md5(bytes).hexdigest();
+        return readable_hash
 
 
+def sraMd5Cal(folder, md5List):
+    sraFiles = os.listdir(folder)
+    reDownloadSra = []
+    # print(sraFiles)
+    for md5Item in md5List.keys():
+        print(f"计算{md5Item}文件的md5值")
+        if md5Item in sraFiles:
+            calMd5filName = f"{folder}/{md5Item}"
+            cd5 = calMd5(calMd5filName)
+            # print(cd5)
+            # print(md5List[md5Item])
+            # print(cd5==md5List[md5Item])
+            if cd5!=md5List[md5Item]:
+                os.remove(calMd5filName)
+        else:
+            reDownloadSra.append(md5Item)
+            
+    print(reDownloadSra)
+    return reDownloadSra
+    
 def del_files(dir_path):
     if os.path.isfile(dir_path):
         try:

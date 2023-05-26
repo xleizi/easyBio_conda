@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 
 setup(
     name='easybio',  # package name
@@ -32,8 +32,7 @@ setup(
     install_requires=[
         # 'biopython',
         'threadpool',
-        'requests',
-        'argparse'
+        'requests'
         # Add more dependencies here
     ],
     package_data={

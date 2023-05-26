@@ -4,7 +4,7 @@
 # Description:
 import argparse
 
-from .Utils import cellrangerRun
+from .Utils import cellrangerRun, cellrangerRun2
 
 
 def main():

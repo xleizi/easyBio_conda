@@ -4,12 +4,18 @@
 # Description:
 import os
 
-from .Utils import tidySummary
-from .Utils import get_num_threads
+from .Utils import tidySummary, getProResults, sraMd5Cal
+from .Utils import get_num_threads, calMd5
 
-from .changeSRAName import renames1, renames2
-from .Utils import check_file_exists, cellrangerRun, splitSRAfun, downLoadSRA
+from .changeSRAName import renames1, renames2, renames3
+from .Utils import check_file_exists, cellrangerRun, splitSRAfun, downLoadSRA, cellrangerRun2
 import argparse
+
+
+# def writeLog(logname, logcontent):
+#     with open(f"{logFiles}/{logname}", 'w') as file:
+#         file.write(logcontent)
+
 
 def main():
     num_threads = get_num_threads()
@@ -42,12 +48,7 @@ def main():
     list_file = args.list_file
 
     rawdirs = f"{dirs}/{gsenumber}/raw"
-
-    # 下载 SRA 数据
-    downLoadSRA(gsenumber, dirs, threads)
-
-    print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-
+    # logdirs = f"{rawdirs}/log"
 
     # splitSRA(rawdirs, kind, threads)
     folder = f"{rawdirs}/sra"
@@ -57,6 +58,32 @@ def main():
 
     print("\033[1;33m{}\033[0m".format(folder))   # 黄
     print("\033[1;33m{}\033[0m".format(fqfiles))   # 黄
+    
+    # os.makedirs(logdirs, exist_ok=True)
+
+    # 下载 SRA 数据
+    results = getProResults(gsenumber)
+    
+    md5List = {}
+    for result in results:
+        run_accession = f'{result["run_accession"]}.sra'
+        sra_md5 = result["sra_md5"]
+        md5List[run_accession] = sra_md5
+    # print(md5List)
+    
+    # reDownloadSra = sraMd5Cal(folder, md5List)
+    
+    reDownloadSra = [1, 2, 3]
+    while len(reDownloadSra) > 1:
+        check=False
+        while not check:
+            # print(results)
+            check = downLoadSRA(gsenumber, results, dirs, threads)
+        reDownloadSra = sraMd5Cal(folder, results)
+        
+    
+    print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
+
 
     target_suffix = 'S1_L001_R1_001.fastq.gz'
     file_exists = check_file_exists(fqfiles, target_suffix)
@@ -68,7 +95,7 @@ def main():
         
         print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
         if list_file:
-            renames2(list_file, fqfiles)
+            renames3(list_file, fqfiles)
         else:
             renames1(fqfiles)
         print("\033[1;32m Rename completed\033[0m")

@@ -83,10 +83,45 @@ def rename_files(files, folder_path, mapping, srr_counts):
             print(f'Renamed {file} to {new_name}')
 
 
+
+def rename_files2(files, folder_path, mapping, srr_counts):
+    name_add_mapping = {}
+    name_add_srr_mapping = {}
+    for file in files:
+        srr_match = re.match(r'(SRR\d+)_(\d)', file)
+        if srr_match:
+            srr, number = srr_match.groups()
+            name = mapping[srr]
+            read_type = ''
+            if srr_counts[srr] == 2:
+                read_type = 'R1' if number == '1' else 'R2'
+            elif srr_counts[srr] == 3:
+                read_type = 'I1' if number == '1' else (
+                    'R1' if number == '2' else 'R2')
+
+            if srr in name_add_srr_mapping:
+                lane_number = name_add_srr_mapping[srr]
+            else:
+                name_add_mapping[name] = name_add_mapping.get(name, 0) + 1
+                name_add_srr_mapping[srr] = name_add_mapping[name]
+                lane_number = name_add_srr_mapping[srr]
+
+            new_name = f"SRR{name}_S{lane_number}_L001_{read_type}_001.fastq.gz"
+            os.rename(os.path.join(folder_path, file),
+                      os.path.join(folder_path, new_name))
+            print(f'Renamed {file} to {new_name}')
+
+
 def renames2(list_file, folder_path):
     mapping = read_mapping_file(list_file)
     files, srr_counts = count_srr_occurrences(folder_path)
     rename_files(files, folder_path, mapping, srr_counts)
+    
+
+def renames3(list_file, folder_path):
+    mapping = read_mapping_file(list_file)
+    files, srr_counts = count_srr_occurrences(folder_path)
+    rename_files2(files, folder_path, mapping, srr_counts)
 
 
 def main():
@@ -105,7 +140,8 @@ def main():
     print("\033[1;32m folder_path:\033[0m \033[32m{}\033[0m".format(folder_path))
     
     if list_file:
-        renames2(list_file, folder_path)
+        # renames2(list_file, folder_path)
+        renames3(list_file, folder_path)
     else:
         renames1(folder_path)
     print("\033[1;32m Rename completed\033[0m")

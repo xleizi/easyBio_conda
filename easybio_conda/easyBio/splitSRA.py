@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-# Author: Lei
-# Date: 2023-04-20
-# Description:
 import argparse
 import os
+from pathlib import Path
 
 from .Utils import splitSRAfun
 from .Utils import get_num_threads

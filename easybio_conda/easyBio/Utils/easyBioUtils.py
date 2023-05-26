@@ -83,23 +83,38 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
 --sample={sample} \
 --expect-cells={expectcellnum} \
 --nosecondary"""
+
+#         cmd = f"""cellranger count --id={sample} \
+# --transcriptome={db} \
+# --fastqs={fq_dir} \
+# --sample={sample} \
+# --expect-cells={expectcellnum}"""
         print("\033[1;33m Running command for sample {}:\033[0m".format(sample))
         print("\033[1;31m{}\033[0m".format(cmd))
         subprocess.run(cmd, shell=True)
+
+        # result = subprocess.run(
+        #     cmd, shell=True, capture_output=True, text=True)
+        # output = result.stdout  # 获取输出结果
+        # # 对输出结果进行运算
+        # output_lines = output.splitlines()
+        # pre = " ".join(output_lines[-20:-18])  # 获取最后20行中的前2行，并将它们连接为一个字符串
+        # print(f"{sample} {pre}")
+
+        
         if matricespath != "":
             mv_cmd = ["mv", f"{sample}", f"{matricespath}"]
             subprocess.run(mv_cmd, check=True)
 
-
 # 多线程跑cellranger使用，目前看效果不大（比单线程快不了太多）
-def run_cellranger(sample, db, fq_dir, expectcellnum, matricespath):
+def run_cellranger(sample, core, db, fq_dir, expectcellnum, matricespath):
     ## --localmem = 128 \
     cmd = f"""cellranger count --id={sample} \
+--localcores={core} \
 --transcriptome={db} \
 --fastqs={fq_dir} \
 --sample={sample} \
---expect-cells={expectcellnum} \
---nosecondary"""
+--expect-cells={expectcellnum}"""
     print("\033[1;33m Running command for sample {}:\033[0m".format(sample))
     print("\033[1;31m{}\033[0m".format(cmd))
     subprocess.run(cmd, shell=True)
@@ -138,12 +153,18 @@ def cellrangerRun2(db, fq_dir, expectcellnum, matricespath=""):
                 if not os.path.isdir(sample_dir):
                     samples.add(sample_id)
     print(samples)
-
-    num_threads = int(get_num_threads() / 10)
-
+    
+    folder_count = len(samples)
+    
+    for i in range(1, min(folder_count + 1, 21)):
+        if folder_count % i == 0:
+            max_workers = i
+    
+    num_threads = max_workers
+    core = 100 // num_threads
     # 调用函数
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        futures = {executor.submit(run_cellranger, sample, db, fq_dir,
+        futures = {executor.submit(run_cellranger, sample, core, db, fq_dir,
                                 expectcellnum, matricespath): sample for sample in samples}
         for future in concurrent.futures.as_completed(futures):
             sample = futures[future]
@@ -177,7 +198,7 @@ def tidySummary(matrices_base, output_base):
         if os.path.isdir(src_folder):
             src_file = os.path.join(src_folder, 'outs', 'web_summary.html')
             src_matrix_folder = os.path.join(
-                src_folder, 'outs', 'raw_feature_bc_matrix')
+                src_folder, 'outs', 'filtered_feature_bc_matrix')
             matrixh5flie = os.path.join(
                 src_folder, 'outs', 'filtered_feature_bc_matrix.h5')
 

@@ -5,8 +5,8 @@
 import argparse
 import os
 
-from .Utils import downLoadSRA
-from .Utils import get_num_threads
+from .Utils import downLoadSRA, getProResults
+from .Utils import get_num_threads, sraMd5Cal
 
 
 def main():
@@ -32,10 +32,39 @@ def main():
     print("\033[1;32mThreads:\033[0m \033[32m{}\033[0m".format(threads))
 
     # 下载 SRA 数据
+    results = getProResults(gsenumber)
+    md5List = {}
+    for result in results:
+        run_accession = f'${result["run_accession"]}.sra'
+        sra_md5 = result["sra_md5"]
+        md5List[run_accession] = sra_md5
+    print(md5List)
+        
     check=False
     while not check:
-        check=downLoadSRA(gsenumber, dirs, threads)
+        # print(results)
+        check = downLoadSRA(gsenumber, results, dirs, threads)
+        
+    # 下载 SRA 数据
+    results = getProResults(gsenumber)
+    
+    md5List = {}
+    for result in results:
+        run_accession = f'{result["run_accession"]}.sra'
+        sra_md5 = result["sra_md5"]
+        md5List[run_accession] = sra_md5
 
+    filedirs = f"{dirs}/{gsenumber}/raw/sra"
+    # reDownloadSra = sraMd5Cal(filedirs, md5List)
+    
+    reDownloadSra = [1, 2, 3]
+    while len(reDownloadSra) > 1:
+        check=False
+        while not check:
+            # print(results)
+            check = downLoadSRA(gsenumber, results, dirs, threads)
+        reDownloadSra = sraMd5Cal(filedirs, results)
+    
 
 
 if __name__ == "__main__":

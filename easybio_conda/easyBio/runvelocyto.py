@@ -61,7 +61,7 @@ def main():
 
     # Compute the number of workers and threads for parallel execution
     max_workers = compute_max_workers(matrices_file)
-    num_threads = (max_memory // 2) // max_workers
+    num_threads = (max_memory // 4) // max_workers
 
     # Get the list of folders to process, excluding those with existing loom files
     folders = [f for f in os.listdir(matrices_file) if os.path.isdir(
@@ -69,6 +69,7 @@ def main():
     print(folders)
     # Run velocyto in parallel using ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    # with ThreadPoolExecutor(max_workers=1) as executor:
         futures = {executor.submit(
             run_velocyto, folder, rmsk_file, gtf_file, matrices_file, num_threads): folder for folder in folders}
         # Process the results and print the status for each folder
@@ -79,4 +80,3 @@ def main():
 # Main script execution
 if __name__ == "__main__":
     main()
-

@@ -65,5 +65,5 @@ if __name__ == "__main__":
                 print(f"Folder {folder} encountered an error: {e}")
 
 
-ThreadPoolExecutor的最大线程改为matrices_file下文件夹的个数，如果个数大于20则取20以下matrices_file下文件夹的个数最大可除尽的数
-num_threads改为max_memory除以2舍去余数，再除以ThreadPoolExecutor的最大线程数
+# ThreadPoolExecutor的最大线程改为matrices_file下文件夹的个数，如果个数大于20则取20以下matrices_file下文件夹的个数最大可除尽的数
+# num_threads改为max_memory除以2舍去余数，再除以ThreadPoolExecutor的最大线程数
