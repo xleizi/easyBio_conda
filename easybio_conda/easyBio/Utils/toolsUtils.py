@@ -13,23 +13,45 @@ def calMd5(filename):
         readable_hash = hashlib.md5(bytes).hexdigest();
         return readable_hash
 
+# 我需要读取md5check文件，文件里面每行是一个文件名，判断md5Item是否在md5check文件里，如果是运行下面的操作，然后将结果保存追加在md5check文件里
 
-def sraMd5Cal(folder, md5List):
+def sraMd5Cal(folder, md5List, rawdirs):
     sraFiles = os.listdir(folder)
     reDownloadSra = []
+    # file= open(f"{rawdirs}/md5check","r")
+    # scItems = file.readlines()
+    # print(scItems)
     # print(sraFiles)
-    for md5Item in md5List.keys():
-        print(f"计算{md5Item}文件的md5值")
-        if md5Item in sraFiles:
-            calMd5filName = f"{folder}/{md5Item}"
-            cd5 = calMd5(calMd5filName)
-            # print(cd5)
-            # print(md5List[md5Item])
-            # print(cd5==md5List[md5Item])
-            if cd5!=md5List[md5Item]:
-                os.remove(calMd5filName)
-        else:
-            reDownloadSra.append(md5Item)
+    
+    md5checkFile = f"{rawdirs}/md5check"
+    if os.path.exists(md5checkFile):
+        file = open(md5checkFile, "r")
+        scItems = file.readlines()
+    else:
+        scItems = []
+    scItems = [item.replace("\n","") for item in scItems]
+    print(scItems)
+    
+    with open(md5checkFile, "a+") as file:
+        for md5Item in md5List.keys():
+            if md5Item in sraFiles:
+                if not md5Item in scItems:
+                    print(f"计算{md5Item}文件的md5值")
+                    calMd5filName = f"{folder}/{md5Item}"
+                    cd5 = calMd5(calMd5filName)
+                    # print(cd5)
+                    # print(md5List[md5Item])
+                    print(cd5==md5List[md5Item])
+                    if cd5!=md5List[md5Item]:
+                        os.remove(calMd5filName)
+                    else:
+                        # f.write(md5Item)
+                        file.writelines(md5Item)
+                        file.writelines("\n")
+            else:
+                reDownloadSra.append(md5Item)
+        
+    
             
     print(reDownloadSra)
     return reDownloadSra

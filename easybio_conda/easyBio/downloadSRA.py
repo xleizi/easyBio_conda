@@ -54,6 +54,7 @@ def main():
         sra_md5 = result["sra_md5"]
         md5List[run_accession] = sra_md5
 
+    rawdirs = f"{dirs}/{gsenumber}/raw"
     filedirs = f"{dirs}/{gsenumber}/raw/sra"
     # reDownloadSra = sraMd5Cal(filedirs, md5List)
     
@@ -63,7 +64,7 @@ def main():
         while not check:
             # print(results)
             check = downLoadSRA(gsenumber, results, dirs, threads)
-        reDownloadSra = sraMd5Cal(filedirs, results)
+        reDownloadSra = sraMd5Cal(filedirs, md5List, rawdirs)
     
 
 

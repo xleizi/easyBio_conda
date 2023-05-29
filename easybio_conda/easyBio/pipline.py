@@ -4,6 +4,8 @@
 # Description:
 import os
 
+from .runvelocyto import buildLoomFile
+
 from .Utils import tidySummary, getProResults, sraMd5Cal
 from .Utils import get_num_threads, calMd5
 
@@ -36,6 +38,10 @@ def main():
     parser.add_argument("-ec", "--expectcellnum", type=int, default=3000,
                         help="Expected cell number for running cellranger (default: 3000)")
 
+    parser.add_argument("-rmf", "--rmsk_file", type=str, help="Path to the hg38_rmsk.gtf file")
+    parser.add_argument("-gtf", "--gtf_file", type=str, help="Path to the Homo_sapiens.GRCh38.109.gtf file")
+    parser.add_argument("-vm", "--max_memory", type=int, default=200, help="Maximum memory in GB (default: 200)")
+    
     args = parser.parse_args()
 
     # Extract values from parsed arguments
@@ -46,18 +52,18 @@ def main():
     db_path = args.db_path
     expectcellnum = args.expectcellnum
     list_file = args.list_file
+    rmsk_file = args.rmsk_file
+    gtf_file = args.gtf_file
+    max_memory = args.max_memory
 
     rawdirs = f"{dirs}/{gsenumber}/raw"
     # logdirs = f"{rawdirs}/log"
 
     # splitSRA(rawdirs, kind, threads)
     folder = f"{rawdirs}/sra"
-    fqfiles = f"{rawdirs}/fq"
     os.makedirs(folder, exist_ok=True)
-    os.makedirs(fqfiles, exist_ok=True)
 
     print("\033[1;33m{}\033[0m".format(folder))   # 黄
-    print("\033[1;33m{}\033[0m".format(fqfiles))   # 黄
     
     # os.makedirs(logdirs, exist_ok=True)
 
@@ -79,12 +85,14 @@ def main():
         while not check:
             # print(results)
             check = downLoadSRA(gsenumber, results, dirs, threads)
-        reDownloadSra = sraMd5Cal(folder, results)
-        
+        reDownloadSra = sraMd5Cal(folder, md5List, rawdirs)
     
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
 
-
+    fqfiles = f"{rawdirs}/fq"
+    os.makedirs(fqfiles, exist_ok=True)
+    print("\033[1;33m{}\033[0m".format(fqfiles))   # 黄
+    
     target_suffix = 'S1_L001_R1_001.fastq.gz'
     file_exists = check_file_exists(fqfiles, target_suffix)
 
@@ -111,6 +119,9 @@ def main():
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
     # 设置源文件夹和目标文件夹的路径
     tidySummary(matricespath, outputpath)
+    
+    if rmsk_file and gtf_file:
+        buildLoomFile(rmsk_file, gtf_file, matricespath, max_memory)
 
 
 if __name__ == "__main__":
