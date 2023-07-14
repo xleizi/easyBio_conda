@@ -8,7 +8,6 @@ import os
 from .Utils import downLoadSRA, getProResults
 from .Utils import get_num_threads, sraMd5Cal
 
-
 def main():
     num_threads = get_num_threads()
 
@@ -40,7 +39,7 @@ def main():
         md5List[run_accession] = sra_md5
     print(md5List)
         
-    check=False
+    check = False
     while not check:
         # print(results)
         check = downLoadSRA(gsenumber, results, dirs, threads)
@@ -65,8 +64,6 @@ def main():
             # print(results)
             check = downLoadSRA(gsenumber, results, dirs, threads)
         reDownloadSra = sraMd5Cal(filedirs, md5List, rawdirs)
-    
-
 
 if __name__ == "__main__":
     main()

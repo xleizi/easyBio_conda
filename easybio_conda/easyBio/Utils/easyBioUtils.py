@@ -10,6 +10,8 @@ import concurrent
 
 from .toolsUtils import get_num_threads
 
+
+
 def splitSRAfun(folder, outdir, threads, kind):
     # Get a list of .sra files in the folder
     sra_files = [f for f in os.listdir(folder) if f.endswith('.sra')]
@@ -40,7 +42,7 @@ def splitSRAfun(folder, outdir, threads, kind):
     print("\033[1;32m All files processed.\033[0m")
 
 
-def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
+def cellrangerRun(db, fq_dir, expectcellnum, otherItem="", matricespath="", ):
     # 获取文件夹中的所有文件名
     filenames = os.listdir(fq_dir)
 
@@ -69,7 +71,9 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
                 sample_dir = os.path.join(matricespath, sample_id)
                 if not os.path.isdir(sample_dir):
                     samples.add(sample_id)
-                    
+            else:
+                samples.add(sample_id)
+
     if samples == set():
         print("\033[1;32m All samples have been processed with Cell Ranger\033[0m")
     else:
@@ -82,7 +86,7 @@ def cellrangerRun(db, fq_dir, expectcellnum, matricespath=""):
 --fastqs={fq_dir} \
 --sample={sample} \
 --expect-cells={expectcellnum} \
---nosecondary"""
+--nosecondary {otherItem}"""
 
 #         cmd = f"""cellranger count --id={sample} \
 # --transcriptome={db} \
@@ -186,11 +190,13 @@ def tidySummary(matrices_base, output_base):
     summary_base = os.path.join(output_base, "summary")
     matrix_base = os.path.join(output_base, "matrix")
     matrixh5_base = os.path.join(output_base, "matrixh5")
+    loomFile_base = os.path.join(output_base, "loomfile")
 
     # 如果目标文件夹不存在，创建它
     os.makedirs(summary_base, exist_ok=True)
     os.makedirs(matrix_base, exist_ok=True)
     os.makedirs(matrixh5_base, exist_ok=True)
+    os.makedirs(loomFile_base, exist_ok=True)
 
     for folder in os.listdir(matrices_base):
         src_folder = os.path.join(matrices_base, folder)
@@ -201,20 +207,40 @@ def tidySummary(matrices_base, output_base):
                 src_folder, 'outs', 'filtered_feature_bc_matrix')
             matrixh5flie = os.path.join(
                 src_folder, 'outs', 'filtered_feature_bc_matrix.h5')
+            loomflie = os.path.join(
+                src_folder, 'velocyto', f'{folder}.loom')
 
             if os.path.exists(src_file):
                 dst_file = os.path.join(summary_base, folder + '.html')
                 if not os.path.exists(dst_file):
-                    shutil.copy2(src_file, dst_file)
+                    try:
+                        shutil.copy2(src_file, dst_file)
+                    except:
+                        pass
                 
             if os.path.exists(src_matrix_folder):
                 dst_matrix_folder = os.path.join(matrix_base, folder)
                 if not os.path.exists(dst_matrix_folder):
-                    shutil.copytree(src_matrix_folder, dst_matrix_folder)
-            
+                    try:
+                        shutil.copytree(src_matrix_folder, dst_matrix_folder)
+                    except:
+                        pass
+                    
             if os.path.exists(matrixh5flie):
-                dst_matrixh5_folder = os.path.join(matrixh5_base, folder)
+                dst_matrixh5_folder = os.path.join(matrixh5_base, folder + '.h5')
                 if not os.path.exists(dst_matrixh5_folder):
-                    shutil.copy2(matrixh5flie, dst_matrixh5_folder)
-    
+                    try:
+                        shutil.copy2(matrixh5flie, dst_matrixh5_folder)
+                    except:
+                        pass
+                    
+            if os.path.exists(loomflie):
+                dst_loom_folder = os.path.join(loomFile_base, folder + '.loom')
+                if not os.path.exists(dst_loom_folder):
+                    try:
+                        shutil.copy2(loomflie, dst_loom_folder)
+                    except:
+                        pass
     print("\033[1;32m All output results have been organized.\033[0m")
+    
+

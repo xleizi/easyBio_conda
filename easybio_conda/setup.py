@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-VERSION = '0.3.2'
+VERSION = '0.4.0'
 
 setup(
     name='easybio',  # package name
@@ -27,12 +27,17 @@ setup(
             'easycellranger=easyBio.run_cellranger:main',
             'easyscGEOpipline=easyBio.pipline:main', 
             'easyVelocyto=easyBio.runvelocyto:main',
+            'easyscGSEpipline=easyBio.gsaPipline:main',
         ]
     },
     install_requires=[
         # 'biopython',
         'threadpool',
-        'requests'
+        'requests',
+        'pandas'
+        # 'velocyto',
+        # 'psutil',
+        # 'Cython'
         # Add more dependencies here
     ],
     package_data={

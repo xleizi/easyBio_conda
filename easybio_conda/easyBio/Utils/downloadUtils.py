@@ -4,6 +4,7 @@
 # Description:
 import math
 import os
+import time
 from .netUtils import requestGet
 from .download import Download
 
@@ -43,10 +44,38 @@ def idDownloadAll(results, dirs):
 
 def getProResults(gsenumber):
     bioproject = getbioproject(gsenumber)
-    pjurl = f"https://www.ebi.ac.uk/ena/portal/api/filereport?result=read_run&accession={bioproject}&limit=1000&format=json&fields=run_accession,sra_md5"
-    pjre = requestGet(pjurl)
+    # bioproject = getbioproject(gsenumber)
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5,mt;q=0.4',
+        'Dnt': '1',
+        'Host': 'www.ebi.ac.uk',
+        'Referer': f'https://www.ebi.ac.uk/ena/browser/view/{bioproject}',
+        'sec-ch-ua-platform': 'Windows',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        "Sec-Fetch-Site": 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.67',
+        'x-requested-with': 'XMLHttpRequest'
+    }
+    pjurl = f"https://www.ebi.ac.uk/ena/portal/api/filereport?result=read_run&accession={bioproject}&limit=1000&format=json&fields=run_accession,sra_md5,sample_alias,submitted_md5,submitted_ftp"
+    pjre = requestGet(pjurl, Headers=headers)
+    # pjre = requestGet(pjurl)
     results = pjre.json()
-    return results
+    try:
+        print(results["message"])
+        print(results)
+        time.sleep(60)
+        getProResults(gsenumber)
+    except:
+        try:
+            print(results[0]["run_accession"])
+            return results
+        except:
+            print(results)
+            time.sleep(60)
+            getProResults(gsenumber)
 
 
 def downLoadSRA(gsenumber, results, dirs, threads) -> bool:
@@ -63,7 +92,7 @@ def downLoadSRA(gsenumber, results, dirs, threads) -> bool:
     None
     """
     print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
-    
+
     threads = min(50, math.ceil(threads / 2))
     filedirs = f"{dirs}/{gsenumber}/raw/sra"
     os.makedirs(filedirs, exist_ok=True)
@@ -71,7 +100,7 @@ def downLoadSRA(gsenumber, results, dirs, threads) -> bool:
     if idDownloadAll(results, filedirs):
         print("\033[32mAll files have been successfully downloaded. Exiting or entering the fastq-dump program...\033[0m")
         return True
-    
+
     for study in results:
         run_accession = study["run_accession"]
         print("\033[33mrun_accession: {}\033[0m".format(run_accession))
@@ -80,6 +109,7 @@ def downLoadSRA(gsenumber, results, dirs, threads) -> bool:
         download = Download(sra_ftp, dirs=filedirs, fileName=f"{run_accession}.sra",
                             threadNum=threads, limitTime=60000)
         download.start()
-    
     return False
+
+
 

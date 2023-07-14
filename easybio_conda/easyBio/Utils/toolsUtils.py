@@ -2,10 +2,13 @@
 # Author: Lei
 # Date: 2023-04-20
 # Description:
+import shutil
 import datetime
 import multiprocessing
 import os
 import hashlib
+
+import psutil
 
 def calMd5(filename):
     with open(filename,"rb") as f:
@@ -13,7 +16,6 @@ def calMd5(filename):
         readable_hash = hashlib.md5(bytes).hexdigest();
         return readable_hash
 
-# 我需要读取md5check文件，文件里面每行是一个文件名，判断md5Item是否在md5check文件里，如果是运行下面的操作，然后将结果保存追加在md5check文件里
 
 def sraMd5Cal(folder, md5List, rawdirs):
     sraFiles = os.listdir(folder)
@@ -30,7 +32,7 @@ def sraMd5Cal(folder, md5List, rawdirs):
     else:
         scItems = []
     scItems = [item.replace("\n","") for item in scItems]
-    print(scItems)
+    # print(scItems)
     
     with open(md5checkFile, "a+") as file:
         for md5Item in md5List.keys():
@@ -41,18 +43,16 @@ def sraMd5Cal(folder, md5List, rawdirs):
                     cd5 = calMd5(calMd5filName)
                     # print(cd5)
                     # print(md5List[md5Item])
-                    print(cd5==md5List[md5Item])
-                    if cd5!=md5List[md5Item]:
+                    print(cd5 == md5List[md5Item])
+                    if cd5 != md5List[md5Item]:
                         os.remove(calMd5filName)
+                        reDownloadSra.append(md5Item)
                     else:
                         # f.write(md5Item)
                         file.writelines(md5Item)
                         file.writelines("\n")
             else:
                 reDownloadSra.append(md5Item)
-        
-    
-            
     print(reDownloadSra)
     return reDownloadSra
     
@@ -85,7 +85,8 @@ def createDir(str):
 
 
 def get_num_threads():
-    num_threads = multiprocessing.cpu_count()
+    # num_threads = multiprocessing.cpu_count()
+    num_threads = os.cpu_count()
     if num_threads <= 16:
         num_threads -= 2
     elif num_threads < 64:
@@ -95,3 +96,29 @@ def get_num_threads():
     else:
         num_threads -= 10
     return num_threads
+
+
+def get_available_memory(unit="GB"):
+    # num_threads = multiprocessing.cpu_count()
+    memory_info = psutil.virtual_memory()
+    memory_available = memory_info.available
+    total_memory_gb = int(memory_available / (1024 ** 3))
+    total_memory_mb = int(memory_available / (1024 ** 2))
+    total_memory_kb = int(memory_available / (1024 ** 1))
+    total_memory = total_memory_gb if unit == "GB" else (
+        total_memory_mb if unit == "MB" else total_memory_kb)
+    print("总可用内存：", total_memory, unit)
+    return total_memory
+
+
+def copyDirs(source_dir, target_dir):
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir)
+
+    for file_name in os.listdir(source_dir):
+        source_file = os.path.join(source_dir, file_name)
+        target_file = os.path.join(target_dir, file_name)
+
+        if os.path.isfile(source_file):
+            shutil.copy2(source_file, target_file)
+            print(f"Copied {source_file} to {target_file}")

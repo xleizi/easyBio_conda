@@ -183,13 +183,13 @@ class Download:
         if (not totalSize):
             print(
                 "\033[1;31mFile does not support streaming download, program exited---{}\033[0m".format(getNowTime()))
-            return
+            return False
         self.partNum = math.ceil((totalSize/self.perPartSize))  # 计算分块数量
         if (self.checkTask()):
             self.deleteParts()
             print(
                 "\033[1;32m{} file downloaded, task exited---{}\033[0m".format(self.fileName, getNowTime()))
-            return
+            return True
         pool = threadpool.ThreadPool(self.threadNum)  # 创建线程池
         partList = []  # 分块列表(包含序号和大小)
         argsList = []  # 任务参数列表
@@ -210,6 +210,8 @@ class Download:
         if (self.checkParts(partList)):  # 检查分块状态
             self.mergeParts()
             self.deleteParts()
+            return True
         else:
             print(
                 "\033[1;31mChunk download incomplete, please rerun the program---{}\033[0m".format(getNowTime()))
+            return False

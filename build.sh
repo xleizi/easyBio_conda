@@ -1,2 +1,2 @@
-# Install cropgbm
+# Install easyBio
 $PYTHON setup.py install 
