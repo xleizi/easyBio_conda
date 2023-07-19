@@ -7,6 +7,7 @@ import datetime
 import multiprocessing
 import os
 import hashlib
+import sys
 
 import psutil
 
@@ -122,3 +123,15 @@ def copyDirs(source_dir, target_dir):
         if os.path.isfile(source_file):
             shutil.copy2(source_file, target_file)
             print(f"Copied {source_file} to {target_file}")
+
+
+def get_current_system():
+    platform = sys.platform
+    if platform.startswith('win'):
+        return 'Windows'
+    elif platform.startswith('linux'):
+        return 'Linux'
+    elif platform.startswith('darwin'):
+        return 'Mac'
+    else:
+        return 'Unknown'

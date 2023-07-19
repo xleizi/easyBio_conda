@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 
-VERSION = '0.4.0'
+VERSION = '0.4.3'
 
 setup(
     name='easybio',  # package name
@@ -28,6 +28,7 @@ setup(
             'easyscGEOpipline=easyBio.pipline:main', 
             'easyVelocyto=easyBio.runvelocyto:main',
             'easyscGSEpipline=easyBio.gsaPipline:main',
+            'easyInstallConda=easyBio.installConda:main',
         ]
     },
     install_requires=[

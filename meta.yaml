@@ -1,9 +1,10 @@
 package:
   name: easybio
-  version: 0.4.0
+  version: 0.4.3
 
 source:
-  path: /home/data/user/lei/code/python/easyBio_conda/easybio_conda
+  # path: /home/data/user/lei/code/python/easyBio_conda/easybio_conda
+  path: .
 
 build:
   number: 0
@@ -14,18 +15,18 @@ requirements:
     - setuptools
     - numpy<1.25
     - pandas
+    # - requests
     # - Cython
     # Add more dependencies here
     
   run:
     - python>=3
-    - numpy<1.25
     # - numpy>=1.20
     - pandas
 
 test:
   imports:
-    - easyBio
+    - easybio
 
   commands:
     - easyBio

@@ -46,20 +46,18 @@ class toFastq:
             print("\033[1;33m{}\033[0m".format("*" * 80))   # 黄
             
     def mvtoFastq(self, tofqPath):
+        if not tofqPath.endswith("/"):
+            tofqPath = tofqPath + "/"
         for filepath, dirnames, filenames in os.walk(tofqPath):
             for filename in filenames:
-                # print(filename)
                 filedir = os.path.join(filepath, filename)
-                # print(filedir)
-                sampleid = filedir.split("/tofq/")[1].split("/")[0]
+                sampleid = filedir.split(tofqPath)[1].split("/")[0]
                 sampleid = os.path.split(filedir)[0].split("/")
                 sampleid = sampleid[len(sampleid)-2]
                 sampleid = sampleid.replace("_", "-")
-                # sampleid
                 fileName = os.path.split(filedir)[1].split("_")
                 fileName[0] = sampleid
                 fileName = "_".join(fileName)
-                # fileName
                 fileName = os.path.join(self.FastqDir, fileName)
                 print(filedir, " to ", fileName)
                 os.renames(filedir, fileName)
